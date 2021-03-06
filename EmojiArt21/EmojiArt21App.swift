@@ -11,7 +11,7 @@ import SwiftUI
 struct EmojiArt21App: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            EmojiArtDocumentView(document: EmojiArtDocument())
         }
     }
 }
