@@ -26,7 +26,20 @@ struct EmojiArtDocumentView: View {
             Rectangle()
                 .foregroundColor(.yellow)
                 .edgesIgnoringSafeArea(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
+                .onDrop(of: ["public.image"], isTargeted: nil) { providers, location in
+                    return drop(providers: providers) }
+            
+            // add image as overlay ... 1:00:00 lecture 6
         }
+    }
+    
+    private func drop(providers: [NSItemProvider]) -> Bool {
+        let found = providers.loadFirstObject(ofType: URL.self) { url in
+            print("dropped \(url)") 
+            document.setBackgroundURL(url)
+        }
+        
+        return found
     }
     
     private let defaultFontSize: CGFloat = 40.0
