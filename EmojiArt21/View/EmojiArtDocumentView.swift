@@ -24,19 +24,24 @@ struct EmojiArtDocumentView: View {
             .padding(.horizontal)
             
             Rectangle()
-                .foregroundColor(.yellow)
+                .foregroundColor(.white).overlay(
+                    // need to wrap it in a Group as .overlay is not a ViewBuilder
+                    Group {
+                        if document.backgroundImage != nil {
+                        Image(uiImage: document.backgroundImage!)
+                        }
+                    })
                 .edgesIgnoringSafeArea(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
-                .onDrop(of: ["public.image"], isTargeted: nil) { providers, location in
+                .onDrop(of: ["public.image", "public.text"], isTargeted: nil) { providers, location in
                     return drop(providers: providers) }
-            
-            // add image as overlay ... 1:00:00 lecture 6
         }
     }
     
     private func drop(providers: [NSItemProvider]) -> Bool {
         let found = providers.loadFirstObject(ofType: URL.self) { url in
-            print("dropped \(url)") 
             document.setBackgroundURL(url)
+            
+            // lecture 7 1:19
         }
         
         return found
