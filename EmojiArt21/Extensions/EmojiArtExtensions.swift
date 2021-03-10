@@ -72,3 +72,11 @@ extension Array where Element == NSItemProvider {
     
 }
 
+extension GeometryProxy {
+    func convert(_ point: CGPoint, from coordinateSpace: CoordinateSpace) -> CGPoint {
+        let frame = self.frame(in: coordinateSpace)
+        return CGPoint(x: point.x - frame.origin.x, y: point.y - frame.origin.y)
+        
+    }
+}
+

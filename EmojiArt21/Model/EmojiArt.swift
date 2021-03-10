@@ -14,8 +14,8 @@ struct EmojiArt {
     struct Emoji: Identifiable {
         fileprivate init(text: String, x: Int, y: Int, size: Int, id: Int) {
             self.text = text
-            self.x = x
-            self.y = y
+            self.x = x // offset from the center
+            self.y = y // offset from the center
             self.size = size
             self.id = id 
         }
