@@ -15,8 +15,6 @@ extension Collection where Element: Identifiable {
 
 extension URL {
     var imageURL: URL {
-        // 53:00
-        // why splitting it like that?
         for query in query?.components(separatedBy: "&") ?? [] {
             let queryComponent = query.components(separatedBy: "=")
             if queryComponent.count == 2 {
