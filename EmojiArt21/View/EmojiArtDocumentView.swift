@@ -11,7 +11,12 @@ struct EmojiArtDocumentView: View {
     
     @StateObject var document: EmojiArtDocument
     
-    @State var zoomScale: CGFloat = 1.0
+    @State private var steadyStateZoomScale: CGFloat = 1.0
+    @GestureState private var gestureZoomScale: CGFloat = 1.0
+    
+    private var zoomScale: CGFloat {
+        steadyStateZoomScale * gestureZoomScale
+    }
     
     var body: some View {
         VStack {
@@ -40,6 +45,7 @@ struct EmojiArtDocumentView: View {
                             .position(position(for: emoji, in: geometry.size))
                     }
                 }
+                .gesture(zoomGesture())
                 .clipped()
                 .edgesIgnoringSafeArea(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
                 .onDrop(of: ["public.image", "public.text"], isTargeted: nil) { providers, location in
@@ -83,7 +89,7 @@ struct EmojiArtDocumentView: View {
             let hZoom = size.width / image.size.width
             let vZoom = size.height / image.size.height
             
-            zoomScale = min(hZoom, vZoom)
+            steadyStateZoomScale = min(hZoom, vZoom)
         }
     }
     
@@ -93,6 +99,17 @@ struct EmojiArtDocumentView: View {
                 withAnimation {
                     zoomToFit(document.backgroundImage, in: size)
                 }
+            }
+    }
+    
+    private func zoomGesture() -> some Gesture {
+        MagnificationGesture()
+            .updating($gestureZoomScale, body: { (latestGestureScale, ourGestureStateInOut, transaction) in
+                // other than an initial value you should never assign a value to gestureZoomScale. Let the gesture handle it to assign values. Lecture 8 1:05
+                ourGestureStateInOut = latestGestureScale
+            })
+            .onEnded { (finalGestureScale) in
+                steadyStateZoomScale *= finalGestureScale
             }
     }
     
