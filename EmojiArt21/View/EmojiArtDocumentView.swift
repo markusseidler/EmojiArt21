@@ -36,7 +36,7 @@ struct EmojiArtDocumentView: View {
                         .gesture(doubleTabToZoom(in: geometry.size))
                     ForEach(document.emojis) { emoji in
                         Text(emoji.text)
-                            .font(font(for: emoji))
+                            .font(animatableWithSize: emoji.fontSize * zoomScale)
                             .position(position(for: emoji, in: geometry.size))
                     }
                 }
@@ -54,13 +54,13 @@ struct EmojiArtDocumentView: View {
         }
     }
     
-    private func font(for emoji: EmojiArt.Emoji) -> Font {
-        Font.system(size: emoji.fontSize * zoomScale)
-    }
+//    private func font(for emoji: EmojiArt.Emoji) -> Font {
+//        Font.system(size: emoji.fontSize * zoomScale)
+//    }
     
     private func position(for emoji: EmojiArt.Emoji, in size: CGSize) -> CGPoint {
         var location = emoji.location
-         location = CGPoint(x: location.x / zoomScale, y: location.y / zoomScale)
+        location = CGPoint(x: location.x * zoomScale, y: location.y * zoomScale)
         return CGPoint(x: location.x + size.width / 2, y: location.y + size.height / 2 )
     }
     

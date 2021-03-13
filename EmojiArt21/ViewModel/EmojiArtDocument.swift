@@ -23,7 +23,8 @@ class EmojiArtDocument: ObservableObject {
     var emojis: [EmojiArt.Emoji] { emojiArt.emojis }
     
     init() {
-        emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled )) ?? EmojiArt()
+        emojiArt = EmojiArt()
+//        emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled )) ?? EmojiArt()
         fetchBackgroundImageData()
     }
     
