@@ -11,6 +11,8 @@ struct EmojiArtDocumentView: View {
     
     @StateObject var document: EmojiArtDocument
     
+    @State private var selectedEmojis: Set<EmojiArt.Emoji> = []
+    
     @State private var steadyStateZoomScale: CGFloat = 1.0
     @GestureState private var gestureZoomScale: CGFloat = 1.0
     
@@ -33,6 +35,7 @@ struct EmojiArtDocumentView: View {
                         Text(emoji)
                             .font(Font.system(size: defaultEmojiSize))
                             .onDrag { NSItemProvider(object: emoji as NSString) }
+                            
                     }
                 }
             }
@@ -47,10 +50,22 @@ struct EmojiArtDocumentView: View {
                                 .scaleEffect(zoomScale)
                                 .offset(panOffSet))
                         .gesture(doubleTabToZoom(in: geometry.size))
+                        .gesture(singleTabToDeselectOrDoubleTabToZoom(in: geometry.size))
                     ForEach(document.emojis) { emoji in
-                        Text(emoji.text)
-                            .font(animatableWithSize: emoji.fontSize * zoomScale)
-                            .position(position(for: emoji, in: geometry.size))
+                        ZStack {
+                            Text(emoji.text)
+                                .font(animatableWithSize: emoji.fontSize * zoomScale)
+                                .padding()
+                                .background(Circle()
+                                                .stroke(isInSelectedEmojis(emoji) ? Color.black : Color.clear))
+                                .position(position(for: emoji, in: geometry.size))
+                                .onTapGesture {
+                                    withAnimation(.easeInOut(duration: 0.4)) {
+                                        selectedEmojis.toggleMatching(emoji)
+                                    }
+                                   
+                            }
+                        }
                     }
                 }
                 .gesture(zoomGesture())
@@ -73,6 +88,7 @@ struct EmojiArtDocumentView: View {
 //    private func font(for emoji: EmojiArt.Emoji) -> Font {
 //        Font.system(size: emoji.fontSize * zoomScale)
 //    }
+    
     
     private func position(for emoji: EmojiArt.Emoji, in size: CGSize) -> CGPoint {
         var location = emoji.location
@@ -107,10 +123,21 @@ struct EmojiArtDocumentView: View {
     
     private func doubleTabToZoom(in size: CGSize) -> some Gesture {
         TapGesture(count: 2)
-            .onEnded {
+            .onEnded { _ in
                 withAnimation {
                     zoomToFit(document.backgroundImage, in: size)
                 }
+            }
+    }
+    
+    private func singleTabToDeselectOrDoubleTabToZoom(in size: CGSize) -> some Gesture {
+        TapGesture(count: 1)
+//            .exclusively(before: doubleTabToZoom(in: size))
+            .onEnded { _ in
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    selectedEmojis.removeAll()
+                }
+               
             }
     }
     
@@ -135,6 +162,12 @@ struct EmojiArtDocumentView: View {
             }
     }
     
+    private func isInSelectedEmojis(_ emoji: EmojiArt.Emoji) -> Bool {
+        selectedEmojis.contains(matching: emoji)
+    }
+    
     private let defaultEmojiSize: CGFloat = 40.0
 }
+
+
 

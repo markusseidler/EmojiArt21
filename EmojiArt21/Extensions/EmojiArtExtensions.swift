@@ -11,6 +11,10 @@ extension Collection where Element: Identifiable {
     func firstIndex(matching element: Element) -> Index? {
         firstIndex(where: { $0.id == element.id } )
     }
+    
+    func contains(matching element: Element) -> Bool {
+        self.contains(where: { $0.id == element.id })
+    }
 }
 
 extension URL {
@@ -79,27 +83,37 @@ extension GeometryProxy {
 }
 
 extension CGSize {
-    static func +(lhs: Self, rhs: Self) -> CGSize {
+    static func + (lhs: Self, rhs: Self) -> CGSize {
         CGSize(width: lhs.width + rhs.width, height: lhs.height + rhs.height)
     }
     
-    static func -(lhs: Self, rhs: Self) -> CGSize {
+    static func - (lhs: Self, rhs: Self) -> CGSize {
         CGSize(width: lhs.width - rhs.width, height: lhs.height - rhs.height)
     }
     
-    static func *(lhs: Self, rhs: Self) -> CGSize {
+    static func * (lhs: Self, rhs: Self) -> CGSize {
         CGSize(width: lhs.width * rhs.width, height: lhs.height * rhs.height)
     }
     
-    static func *(lhs: Self, rhs: CGFloat) -> CGSize {
+    static func * (lhs: Self, rhs: CGFloat) -> CGSize {
         CGSize(width: lhs.width * rhs, height: lhs.height * rhs)
     }
     
-    static func /(lhs: Self, rhs: Self) -> CGSize {
+    static func / (lhs: Self, rhs: Self) -> CGSize {
         CGSize(width: lhs.width / rhs.width, height: lhs.height / rhs.height)
     }
     
-    static func /(lhs: Self, rhs: CGFloat) -> CGSize {
+    static func / (lhs: Self, rhs: CGFloat) -> CGSize {
         CGSize(width: lhs.width / rhs, height: lhs.height / rhs)
+    }
+}
+
+extension Set where Element: Identifiable {
+    mutating func toggleMatching(_ element: Element) {
+        if contains(matching: element) {
+            self.remove(element)
+        } else {
+            self.insert(element)
+        }
     }
 }

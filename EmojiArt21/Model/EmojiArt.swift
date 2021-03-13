@@ -11,7 +11,7 @@ struct EmojiArt: Codable {
     var backgroundURL: URL?
     var emojis = [Emoji]()
     
-    struct Emoji: Identifiable, Codable {
+    struct Emoji: Identifiable, Codable, Hashable {
         fileprivate init(text: String, x: Int, y: Int, size: Int, id: Int) {
             self.text = text
             self.x = x // offset from the center
