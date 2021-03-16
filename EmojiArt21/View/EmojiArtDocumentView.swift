@@ -24,7 +24,7 @@ struct EmojiArtDocumentView: View {
     @GestureState private var gesturePanOffset: CGSize = .zero
     
     private var panOffset: CGSize {
-      steadyStatePanOffset + gesturePanOffset * zoomScale
+      (steadyStatePanOffset + gesturePanOffset) * zoomScale
     }
     
     var body: some View {
@@ -41,6 +41,7 @@ struct EmojiArtDocumentView: View {
             }
             .padding(.horizontal)
             
+            
             GeometryReader { geometry in
                 ZStack {
                     Rectangle()
@@ -52,7 +53,6 @@ struct EmojiArtDocumentView: View {
                         .gesture(doubleTapToZoom(in: geometry.size))
                         .gesture(singleTapToDeselectOrDoubleTapToZoom(in: geometry.size))
                     ForEach(document.emojis) { emoji in
-                        ZStack {
                             Text(emoji.text)
                                 .font(animatableWithSize: emoji.fontSize * zoomScale)
                                 .padding()
@@ -62,25 +62,25 @@ struct EmojiArtDocumentView: View {
                                 .onTapGesture {
                                     withAnimation(.easeInOut(duration: 0.4)) {
                                         selectedEmojis.toggleMatching(emoji)
+                                        
                                     }
-                                   
                             }
-                        }
                     }
                 }
-                .gesture(zoomGesture())
-                .gesture(panGesture())
                 .clipped()
-                .edgesIgnoringSafeArea(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
+
+                .gesture(panGesture())
+                .gesture(zoomGesture())
+                .edgesIgnoringSafeArea(.all)
                 .onDrop(of: ["public.image", "public.text"], isTargeted: nil) { providers, location in
                     var location = geometry.convert(location, from: .global)
                     location = CGPoint(x: location.x - geometry.size.width / 2, y: location.y - geometry.size.height / 2)
                     location = CGPoint(x: location.x - panOffset.width, y: location.y - panOffset.height)
                     location = CGPoint(x: location.x / zoomScale, y: location.y / zoomScale)
-                    
+
                     return drop(providers: providers, at: location)
                 }
-                
+
             }
         }
     }
