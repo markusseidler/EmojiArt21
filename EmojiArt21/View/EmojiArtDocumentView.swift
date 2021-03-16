@@ -20,11 +20,11 @@ struct EmojiArtDocumentView: View {
         steadyStateZoomScale * gestureZoomScale
     }
     
-    @State private var steadyStatePanOffSet: CGSize = .zero
-    @GestureState private var gesturePanOffSet: CGSize = .zero
+    @State private var steadyStatePanOffset: CGSize = .zero
+    @GestureState private var gesturePanOffset: CGSize = .zero
     
-    private var panOffSet: CGSize {
-      steadyStatePanOffSet + gesturePanOffSet * zoomScale
+    private var panOffset: CGSize {
+      steadyStatePanOffset + gesturePanOffset * zoomScale
     }
     
     var body: some View {
@@ -48,9 +48,9 @@ struct EmojiArtDocumentView: View {
                             // need to wrap it in a Group as .overlay is not a ViewBuilder
                             OptionalImage(image: document.backgroundImage)
                                 .scaleEffect(zoomScale)
-                                .offset(panOffSet))
-                        .gesture(doubleTabToZoom(in: geometry.size))
-                        .gesture(singleTabToDeselectOrDoubleTabToZoom(in: geometry.size))
+                                .offset(panOffset))
+                        .gesture(doubleTapToZoom(in: geometry.size))
+                        .gesture(singleTapToDeselectOrDoubleTapToZoom(in: geometry.size))
                     ForEach(document.emojis) { emoji in
                         ZStack {
                             Text(emoji.text)
@@ -75,7 +75,7 @@ struct EmojiArtDocumentView: View {
                 .onDrop(of: ["public.image", "public.text"], isTargeted: nil) { providers, location in
                     var location = geometry.convert(location, from: .global)
                     location = CGPoint(x: location.x - geometry.size.width / 2, y: location.y - geometry.size.height / 2)
-                    location = CGPoint(x: location.x - panOffSet.width, y: location.y - panOffSet.height)
+                    location = CGPoint(x: location.x - panOffset.width, y: location.y - panOffset.height)
                     location = CGPoint(x: location.x / zoomScale, y: location.y / zoomScale)
                     
                     return drop(providers: providers, at: location)
@@ -94,7 +94,7 @@ struct EmojiArtDocumentView: View {
         var location = emoji.location
         location = CGPoint(x: location.x * zoomScale, y: location.y * zoomScale)
         location = CGPoint(x: location.x + size.width / 2, y: location.y + size.height / 2 )
-        location = CGPoint(x: location.x + panOffSet.width, y: location.y + panOffSet.height )
+        location = CGPoint(x: location.x + panOffset.width, y: location.y + panOffset.height )
         return location
     }
     
@@ -116,12 +116,12 @@ struct EmojiArtDocumentView: View {
         if let image = image, image.size.width > 0, image.size.height > 0 {
             let hZoom = size.width / image.size.width
             let vZoom = size.height / image.size.height
-            steadyStatePanOffSet = .zero
+            steadyStatePanOffset = .zero
             steadyStateZoomScale = min(hZoom, vZoom)
         }
     }
     
-    private func doubleTabToZoom(in size: CGSize) -> some Gesture {
+    private func doubleTapToZoom(in size: CGSize) -> some Gesture {
         TapGesture(count: 2)
             .onEnded { _ in
                 withAnimation {
@@ -130,7 +130,7 @@ struct EmojiArtDocumentView: View {
             }
     }
     
-    private func singleTabToDeselectOrDoubleTabToZoom(in size: CGSize) -> some Gesture {
+    private func singleTapToDeselectOrDoubleTapToZoom(in size: CGSize) -> some Gesture {
         TapGesture(count: 1)
 //            .exclusively(before: doubleTabToZoom(in: size))
             .onEnded { _ in
@@ -154,11 +154,11 @@ struct EmojiArtDocumentView: View {
     
     private func panGesture() -> some Gesture {
         DragGesture()
-            .updating($gesturePanOffSet, body: { (latestGestureScale, ourGestureStateInOut, transaction) in
+            .updating($gesturePanOffset, body: { (latestGestureScale, ourGestureStateInOut, transaction) in
                 ourGestureStateInOut = latestGestureScale.translation / zoomScale
             })
             .onEnded { (finalDragGestureValue) in
-                steadyStatePanOffSet = steadyStatePanOffSet + (finalDragGestureValue.translation / zoomScale)
+                steadyStatePanOffset = steadyStatePanOffset + (finalDragGestureValue.translation / zoomScale)
             }
     }
     
