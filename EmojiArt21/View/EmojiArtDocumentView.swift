@@ -27,6 +27,9 @@ struct EmojiArtDocumentView: View {
       (steadyStatePanOffset + gesturePanOffset) * zoomScale
     }
     
+    @State private var steadyStatePanOffsetEmoji: CGSize = .zero
+    @GestureState private var gesturePanOffsetEmoji: CGSize = .zero
+    
     var body: some View {
         VStack {
             ScrollView(.horizontal) {
@@ -60,11 +63,12 @@ struct EmojiArtDocumentView: View {
                                                 .stroke(isInSelectedEmojis(emoji) ? Color.black : Color.clear))
                                 .position(position(for: emoji, in: geometry.size))
                                 .onTapGesture {
-                                    withAnimation(.easeInOut(duration: 0.4)) {
+                                    withAnimation(.easeInOut(duration: 0.1)) {
                                         selectedEmojis.toggleMatching(emoji)
                                         
                                     }
                             }
+                                .gesture(panGestureEmoji())
                     }
                 }
                 .clipped()
@@ -159,6 +163,22 @@ struct EmojiArtDocumentView: View {
             })
             .onEnded { (finalDragGestureValue) in
                 steadyStatePanOffset = steadyStatePanOffset + (finalDragGestureValue.translation / zoomScale)
+            }
+    }
+    
+    private func panGestureEmoji() -> some Gesture {
+        DragGesture()
+            .updating($gesturePanOffsetEmoji) { (latestDragGestureValue, ourGestureStateInOut, transaction) in
+                ourGestureStateInOut = latestDragGestureValue.translation / zoomScale
+            }
+            .onEnded { (finalDragGestureValue) in
+                let distanceDragged = finalDragGestureValue.translation / zoomScale
+                
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    for emoji in selectedEmojis {
+                        document.moveEmoji(emoji, by: distanceDragged)
+                    }
+                }
             }
     }
     
