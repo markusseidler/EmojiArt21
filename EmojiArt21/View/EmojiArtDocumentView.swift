@@ -17,7 +17,7 @@ struct EmojiArtDocumentView: View {
     @GestureState private var gestureZoomScale: CGFloat = 1.0
     
     private var zoomScale: CGFloat {
-        steadyStateZoomScale * gestureZoomScale
+        steadyStateZoomScale * (selectedEmojis.isEmpty ? gestureZoomScale : 1)
     }
     
     @State private var steadyStatePanOffset: CGSize = .zero
@@ -57,7 +57,7 @@ struct EmojiArtDocumentView: View {
                         .gesture(singleTapToDeselectOrDoubleTapToZoom(in: geometry.size))
                     ForEach(document.emojis) { emoji in
                             Text(emoji.text)
-                                .font(animatableWithSize: emoji.fontSize * zoomScale)
+                                .font(animatableWithSize: emoji.fontSize * zoomScale(for: emoji))
                                 .padding()
                                 .background(Circle()
                                                 .stroke(isInSelectedEmojis(emoji) ? Color.black : Color.clear))
@@ -152,7 +152,14 @@ struct EmojiArtDocumentView: View {
                 ourGestureStateInOut = latestGestureScale
             })
             .onEnded { (finalGestureScale) in
-                steadyStateZoomScale *= finalGestureScale
+                if selectedEmojis.isEmpty {
+                    steadyStateZoomScale *= finalGestureScale
+                } else {
+                    selectedEmojis.forEach { (emoji) in
+                        document.scaleEmoji(emoji, by: finalGestureScale)
+                    }
+                }
+//
             }
     }
     
@@ -180,6 +187,14 @@ struct EmojiArtDocumentView: View {
                     }
                 }
             }
+    }
+    
+    private func zoomScale(for emoji: EmojiArt.Emoji) -> CGFloat {
+        if isInSelectedEmojis(emoji) {
+            return steadyStateZoomScale * gestureZoomScale
+        } else {
+            return zoomScale
+        }
     }
     
     private func isInSelectedEmojis(_ emoji: EmojiArt.Emoji) -> Bool {
