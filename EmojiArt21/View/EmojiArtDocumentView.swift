@@ -32,17 +32,33 @@ struct EmojiArtDocumentView: View {
     
     var body: some View {
         VStack {
-            ScrollView(.horizontal) {
-                HStack {
-                    ForEach(EmojiArtDocument.palette.map { String($0) }, id: \.self) { emoji in
-                        Text(emoji)
-                            .font(Font.system(size: defaultEmojiSize))
-                            .onDrag { NSItemProvider(object: emoji as NSString) }
-                            
+            HStack {
+                ScrollView(.horizontal) {
+                    HStack {
+                        ForEach(EmojiArtDocument.palette.map { String($0) }, id: \.self) { emoji in
+                            Text(emoji)
+                                .font(Font.system(size: defaultEmojiSize))
+                                .onDrag { NSItemProvider(object: emoji as NSString) }
+                                
+                        }
                     }
                 }
+                .padding(.horizontal)
+                
+                Spacer()
+                Button(action: {
+                    selectedEmojis.forEach { (emoji) in
+                        document.removeEmoji(emoji)
+                        selectedEmojis.remove(emoji)
+                    }
+                }, label: {
+                    Image(systemName: "trash.fill")
+                        .font(animatableWithSize: defaultEmojiSize)
+//
+                })
+                .disabled(selectedEmojis.isEmpty)
+                .padding()
             }
-            .padding(.horizontal)
             
             
             GeometryReader { geometry in
@@ -69,6 +85,7 @@ struct EmojiArtDocumentView: View {
                                     }
                             }
                                 .gesture(panGestureEmoji())
+                                .gesture(longPressToRemove(emoji: emoji))
                     }
                 }
                 .clipped()
@@ -186,6 +203,13 @@ struct EmojiArtDocumentView: View {
                         document.moveEmoji(emoji, by: distanceDragged)
                     }
                 }
+            }
+    }
+    
+    private func longPressToRemove(emoji: EmojiArt.Emoji) -> some Gesture {
+        LongPressGesture(minimumDuration: 1)
+            .onEnded { (_) in
+                document.removeEmoji(emoji)
             }
     }
     
