@@ -30,6 +30,10 @@ struct EmojiArtDocumentView: View {
     @State private var steadyStatePanOffsetEmoji: CGSize = .zero
     @GestureState private var gesturePanOffsetEmoji: CGSize = .zero
     
+    private var isLoading: Bool {
+        document.backgroundURL != nil && document.backgroundImage == nil
+    }
+    
     var body: some View {
         VStack {
             HStack {
@@ -39,7 +43,7 @@ struct EmojiArtDocumentView: View {
                             Text(emoji)
                                 .font(Font.system(size: defaultEmojiSize))
                                 .onDrag { NSItemProvider(object: emoji as NSString) }
-                                
+                            
                         }
                     }
                 }
@@ -71,21 +75,27 @@ struct EmojiArtDocumentView: View {
                                 .offset(panOffset))
                         .gesture(doubleTapToZoom(in: geometry.size))
                         .gesture(singleTapToDeselectOrDoubleTapToZoom(in: geometry.size))
-                    ForEach(document.emojis) { emoji in
-                            Text(emoji.text)
-                                .font(animatableWithSize: emoji.fontSize * zoomScale(for: emoji))
-                                .padding()
-                                .background(Circle()
-                                                .stroke(isInSelectedEmojis(emoji) ? Color.black : Color.clear))
-                                .position(position(for: emoji, in: geometry.size))
-                                .onTapGesture {
-                                    withAnimation(.easeInOut(duration: 0.1)) {
-                                        selectedEmojis.toggleMatching(emoji)
-                                        
-                                    }
-                            }
-                                .gesture(panGestureEmoji())
-                                .gesture(longPressToRemove(emoji: emoji))
+                    
+                    
+                    if isLoading {
+                        Image(systemName: "hourglass").imageScale(.large).spinning()
+                    } else {
+                        ForEach(document.emojis) { emoji in
+                                Text(emoji.text)
+                                    .font(animatableWithSize: emoji.fontSize * zoomScale(for: emoji))
+                                    .padding()
+                                    .background(Circle()
+                                                    .stroke(isInSelectedEmojis(emoji) ? Color.black : Color.clear))
+                                    .position(position(for: emoji, in: geometry.size))
+                                    .onTapGesture {
+                                        withAnimation(.easeInOut(duration: 0.1)) {
+                                            selectedEmojis.toggleMatching(emoji)
+                                            
+                                        }
+                                }
+                                    .gesture(panGestureEmoji())
+                                    .gesture(longPressToRemove(emoji: emoji))
+                        }
                     }
                 }
                 .clipped()
@@ -121,7 +131,7 @@ struct EmojiArtDocumentView: View {
     
     private func drop(providers: [NSItemProvider], at location: CGPoint) -> Bool {
         var found = providers.loadFirstObject(ofType: URL.self) { url in
-            document.setBackgroundURL(url)
+            document.backgroundURL = url
         }
         
         if !found {

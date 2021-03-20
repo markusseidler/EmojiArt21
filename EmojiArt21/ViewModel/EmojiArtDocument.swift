@@ -24,7 +24,7 @@ class EmojiArtDocument: ObservableObject {
     
     init() {
         emojiArt = EmojiArt()
-//        emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled )) ?? EmojiArt()
+        emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled )) ?? EmojiArt()
         fetchBackgroundImageData()
     }
     
@@ -55,9 +55,15 @@ class EmojiArtDocument: ObservableObject {
         }
     }
     
-    func setBackgroundURL(_ url: URL?) {
-        emojiArt.backgroundURL = url?.imageURL
-        fetchBackgroundImageData()
+    var backgroundURL: URL? {
+        get {
+            emojiArt.backgroundURL
+        }
+        set {
+            emojiArt.backgroundURL = newValue?.imageURL
+            fetchBackgroundImageData()
+            
+        }
     }
     
     private func fetchBackgroundImageData() {
