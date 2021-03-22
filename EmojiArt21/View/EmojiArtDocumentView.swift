@@ -34,12 +34,18 @@ struct EmojiArtDocumentView: View {
         document.backgroundURL != nil && document.backgroundImage == nil
     }
     
+    @State private var chosenPalette: String = ""
+    
     var body: some View {
         VStack {
             HStack {
+                PaletteChooser(document: document, chosenPalette: $chosenPalette)
+                    .onAppear {
+                        chosenPalette = document.defaultPalette
+                    }
                 ScrollView(.horizontal) {
                     HStack {
-                        ForEach(EmojiArtDocument.palette.map { String($0) }, id: \.self) { emoji in
+                        ForEach(chosenPalette.map { String($0) }, id: \.self) { emoji in
                             Text(emoji)
                                 .font(Font.system(size: defaultEmojiSize))
                                 .onDrag { NSItemProvider(object: emoji as NSString) }
@@ -47,7 +53,7 @@ struct EmojiArtDocumentView: View {
                         }
                     }
                 }
-                .padding(.horizontal)
+    
                 
                 Spacer()
                 Button(action: {
@@ -99,10 +105,15 @@ struct EmojiArtDocumentView: View {
                     }
                 }
                 .clipped()
-
                 .gesture(panGesture())
                 .gesture(zoomGesture())
                 .edgesIgnoringSafeArea(.all)
+//                .onReceive(document.$backgroundImage) { image
+//                    zoomToFit(image, in: geometry.size)
+//                }
+                .onReceive(document.$backgroundImage, perform: { image in
+                    zoomToFit(image, in: geometry.size)
+                })
                 .onDrop(of: ["public.image", "public.text"], isTargeted: nil) { providers, location in
                     var location = geometry.convert(location, from: .global)
                     location = CGPoint(x: location.x - geometry.size.width / 2, y: location.y - geometry.size.height / 2)
@@ -156,7 +167,7 @@ struct EmojiArtDocumentView: View {
         TapGesture(count: 2)
             .onEnded { _ in
                 withAnimation {
-                    zoomToFit(document.backgroundImage, in: size)
+                     zoomToFit(document.backgroundImage, in: size)
                 }
             }
     }

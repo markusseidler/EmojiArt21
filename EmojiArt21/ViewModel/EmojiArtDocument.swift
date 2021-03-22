@@ -6,25 +6,32 @@
 //
 
 import SwiftUI
+import Combine
 
 class EmojiArtDocument: ObservableObject {
  
     static let palette = "⭐️☁️🍎🌍🥨⚾️ "
     
-    @Published private var emojiArt: EmojiArt {
-        didSet {
-//            print("json = \(String(decoding: emojiArt.json!, as: UTF8.self))")
-            UserDefaults.standard.setValue(emojiArt.json, forKey: EmojiArtDocument.untitled)
-        }
-    }
+//    @Published private var emojiArt: EmojiArt {
+//        didSet {
+////            print("json = \(String(decoding: emojiArt.json!, as: UTF8.self))")
+//            UserDefaults.standard.setValue(emojiArt.json, forKey: EmojiArtDocument.untitled)
+//        }
+//    }
+    
+    @Published private var emojiArt: EmojiArt
     
     @Published private(set) var backgroundImage: UIImage?
     
     var emojis: [EmojiArt.Emoji] { emojiArt.emojis }
+    private var autoSaveCancellable: AnyCancellable?
     
     init() {
-        emojiArt = EmojiArt()
         emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled )) ?? EmojiArt()
+        autoSaveCancellable = $emojiArt.sink { (emojiArt) in
+            print("json = \(String(decoding: emojiArt.json!, as: UTF8.self))")
+            UserDefaults.standard.setValue(emojiArt.json, forKey: EmojiArtDocument.untitled)
+        }
         fetchBackgroundImageData()
     }
     
@@ -66,22 +73,49 @@ class EmojiArtDocument: ObservableObject {
         }
     }
     
+//    private func fetchBackgroundImageData() {
+//        backgroundImage = nil
+//        if let url = emojiArt.backgroundURL {
+//            DispatchQueue.global(qos: .userInitiated).async {
+//                if let imageData = try? Data(contentsOf: url) {
+//                    DispatchQueue.main.async {
+//                        if url == self.emojiArt.backgroundURL {
+//                            self.backgroundImage = UIImage(data: imageData)
+//                        }
+//                    }
+//                }
+//            }
+//
+//        }
+//    }
+    
+    private var myFetchImageCancellable: AnyCancellable?
+    
     private func fetchBackgroundImageData() {
         backgroundImage = nil
         if let url = emojiArt.backgroundURL {
-            DispatchQueue.global(qos: .userInitiated).async {
-                if let imageData = try? Data(contentsOf: url) {
-                    DispatchQueue.main.async {
-                        if url == self.emojiArt.backgroundURL {
-                            self.backgroundImage = UIImage(data: imageData)
-                        }
-                    }
-                }
-            }
-           
+            
+            // making sure that outstanding requests are cancelled first
+            myFetchImageCancellable?.cancel()
+            
+            // lecture 9: 53 minute
+            myFetchImageCancellable = URLSession.shared.dataTaskPublisher(for: url)
+                
+                // transform this publisher that it publishes UIImage
+                .map { data, response in UIImage(data: data) }
+                
+                // make sure that the publisher only publishes on main queue. URLSession works on the background queue
+                .receive(on: DispatchQueue.main)
+                
+                // don't want to deal with errors. if error then publish nil
+                .replaceError(with: nil)
+                
+                // assign it to key path var on object self, assign only works if failure is never or nil
+                .assign(to: \.backgroundImage, on: self)
+            
         }
     }
- 
+    
 } 
 
 extension EmojiArt.Emoji {
