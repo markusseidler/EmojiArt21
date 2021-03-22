@@ -36,6 +36,7 @@ struct EmojiArtDocumentView: View {
     
     @State private var chosenPalette: String = ""
     
+    
     var body: some View {
         VStack {
             HStack {
