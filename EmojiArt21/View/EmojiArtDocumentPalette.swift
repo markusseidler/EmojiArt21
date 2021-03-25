@@ -39,6 +39,7 @@ extension EmojiArtDocument {
         paletteNames[palette] = name
     }
     
+    
     func addPalette(_ palette: String, named name: String) {
         paletteNames[name] = palette
     }

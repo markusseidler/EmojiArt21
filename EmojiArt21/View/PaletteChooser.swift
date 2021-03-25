@@ -33,7 +33,8 @@ struct PaletteChooser: View {
                     showPaletteEditor = true
                 }
                 .popover(isPresented: $showPaletteEditor) {
-                    PaletteEditor()
+                    PaletteEditor(chosenPalette: $chosenPalette)
+                        .environmentObject(document)
                         .frame(width: 300, height: 500 )
                 }
         }
@@ -49,8 +50,37 @@ struct PaletteChooser_Previews: PreviewProvider {
 
 
 struct PaletteEditor: View {
+    @EnvironmentObject var document: EmojiArtDocument
+    @Binding var chosenPalette: String
+    
+    @State private var paletteName: String = ""
+    @State private var emojisToAdd: String = ""
     
     var body: some View {
-        Text("Palette Editor")
+        VStack(spacing: 0) {
+            Text("Palette Editor").font(.headline).padding()
+            Divider()
+//            Text(document.paletteNames[chosenPalette] ?? "")
+//                .padding()
+            TextField("Palette Name", text: $paletteName, onEditingChanged: { (began) in
+                if !began {
+                    document.renamePalette(chosenPalette, to: paletteName)
+                }
+            })
+                .padding()
+            TextField("Add Emoji", text: $emojisToAdd, onEditingChanged: { (began) in
+                if !began {
+                    chosenPalette = document.addEmoji(emojisToAdd, toPalette: chosenPalette)
+                    emojisToAdd = ""
+                }
+            })
+                .padding()
+            Spacer()
+            
+        }
+        .onAppear {
+            paletteName = document.paletteNames[chosenPalette] ?? ""
+        }
+        
     }
 }
