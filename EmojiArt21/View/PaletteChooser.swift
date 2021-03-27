@@ -32,10 +32,15 @@ struct PaletteChooser: View {
                 .onTapGesture {
                     showPaletteEditor = true
                 }
-                .sheet(isPresented: $showPaletteEditor) {
-                    PaletteEditor(chosenPalette: $chosenPalette, isShowing: $showPaletteEditor)
-                        .environmentObject(document)
-//                        .frame(width: 300, height: 500 )
+                .popover(isPresented: $showPaletteEditor) {                    
+                    if UIDevice.current.userInterfaceIdiom == .phone {
+                        PaletteEditor(chosenPalette: $chosenPalette, isShowing: $showPaletteEditor)
+                            .environmentObject(document)
+                    } else {
+                        PaletteEditor(chosenPalette: $chosenPalette, isShowing: $showPaletteEditor)
+                            .environmentObject(document)
+                            .frame(width: 300, height: 500 )
+                    }
                 }
         }
         .fixedSize(horizontal: true, vertical: false)

@@ -143,6 +143,7 @@ struct EmojiArtDocumentView: View {
                 }))
 
             }
+            .zIndex(-1)
         }
         .alert(isPresented: $confirmBackgroundPaste) {
             Alert(
