@@ -18,7 +18,8 @@ struct EmojiArt21App: App {
             EmojiArtDocumentChooser()
                 .environmentObject(store)
                 .onAppear {
-//                    store.addDocument() 
+//                    store.addDocument()
+//                    store.addDocument(named: "Hello World")
                 }
         }
     }

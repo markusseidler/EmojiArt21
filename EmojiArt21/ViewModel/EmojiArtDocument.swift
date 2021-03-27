@@ -34,6 +34,11 @@ class EmojiArtDocument: ObservableObject, Hashable, Identifiable {
     
     @Published private(set) var backgroundImage: UIImage?
     
+    
+    @Published var steadyStateZoomScale: CGFloat = 1.0
+    @Published var steadyStatePanOffset: CGSize = .zero
+   
+    
     var emojis: [EmojiArt.Emoji] { emojiArt.emojis }
     private var autoSaveCancellable: AnyCancellable?
     
