@@ -32,10 +32,10 @@ struct PaletteChooser: View {
                 .onTapGesture {
                     showPaletteEditor = true
                 }
-                .popover(isPresented: $showPaletteEditor) {
-                    PaletteEditor(chosenPalette: $chosenPalette)
+                .sheet(isPresented: $showPaletteEditor) {
+                    PaletteEditor(chosenPalette: $chosenPalette, isShowing: $showPaletteEditor)
                         .environmentObject(document)
-                        .frame(width: 300, height: 500 )
+//                        .frame(width: 300, height: 500 )
                 }
         }
         .fixedSize(horizontal: true, vertical: false)
@@ -52,35 +52,66 @@ struct PaletteChooser_Previews: PreviewProvider {
 struct PaletteEditor: View {
     @EnvironmentObject var document: EmojiArtDocument
     @Binding var chosenPalette: String
+    @Binding var isShowing: Bool
     
     @State private var paletteName: String = ""
     @State private var emojisToAdd: String = ""
     
     var body: some View {
         VStack(spacing: 0) {
-            Text("Palette Editor").font(.headline).padding()
+            ZStack {
+                Text("Palette Editor").font(.headline).padding()
+                HStack {
+                    Spacer()
+                    Button {
+                        isShowing = false
+                    } label: {
+                        Text("Done")
+                    }
+                    .padding()
+
+                }
+            }
             Divider()
-//            Text(document.paletteNames[chosenPalette] ?? "")
-//                .padding()
-            TextField("Palette Name", text: $paletteName, onEditingChanged: { (began) in
-                if !began {
-                    document.renamePalette(chosenPalette, to: paletteName)
+            Form {
+                Section {
+                    TextField("Palette Name", text: $paletteName, onEditingChanged: { (began) in
+                        if !began {
+                            document.renamePalette(chosenPalette, to: paletteName)
+                        }
+                    })
+                    
+                    TextField("Add Emoji", text: $emojisToAdd, onEditingChanged: { (began) in
+                        if !began {
+                            chosenPalette = document.addEmoji(emojisToAdd, toPalette: chosenPalette)
+                            emojisToAdd = ""
+                        }
+                    })
                 }
-            })
-                .padding()
-            TextField("Add Emoji", text: $emojisToAdd, onEditingChanged: { (began) in
-                if !began {
-                    chosenPalette = document.addEmoji(emojisToAdd, toPalette: chosenPalette)
-                    emojisToAdd = ""
+                
+                Section(header: Text("Remove Emoji")) {
+                    Grid(chosenPalette.map { String($0)}, id: \.self) { emoji in
+                        Text(emoji)
+                            .font(Font.system(size: fontSize ))
+                            .onTapGesture {
+                                chosenPalette = document.removeEmoji(emoji, fromPalette: chosenPalette)
+                            }
+                    }
+                    .frame(height: height)
                 }
-            })
-                .padding()
-            Spacer()
-            
+            }
+             
         }
         .onAppear {
             paletteName = document.paletteNames[chosenPalette] ?? ""
         }
-        
     }
+    
+    // MARK: - Drawing Constants
+    
+    var height: CGFloat {
+        CGFloat((chosenPalette.count - 1) / 6) * 70 + 70
+    }
+    
+    let fontSize: CGFloat = 40.0
 }

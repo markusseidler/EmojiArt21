@@ -50,7 +50,6 @@ struct EmojiArtDocumentView: View {
                             Text(emoji)
                                 .font(Font.system(size: defaultEmojiSize))
                                 .onDrag { NSItemProvider(object: emoji as NSString) }
-                            
                         }
                     }
                 }
