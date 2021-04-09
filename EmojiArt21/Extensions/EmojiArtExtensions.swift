@@ -30,6 +30,8 @@ extension URL {
         
         return self.baseURL ?? self
     }
+    
+    
 }
 // function above checks to see if there is an embedded imgurl reference
 //example of imgurl
@@ -160,4 +162,25 @@ extension String {
     }
 }
 
-
+extension UIImage {
+    func storeInTheFileSystem(name: String = "\(Date().timeIntervalSince1970)") -> URL? {
+        var url = try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true)
+        
+        url = url?.appendingPathComponent(name)
+         
+        if url != nil {
+            do {
+                try jpegData(compressionQuality: 1.0)?.write(to: url! )
+            } catch {
+                url = nil
+            }
+        }
+        
+        return url
+    }
+    
+}

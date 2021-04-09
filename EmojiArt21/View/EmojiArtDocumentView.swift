@@ -124,7 +124,7 @@ struct EmojiArtDocumentView: View {
 
                     return drop(providers: providers, at: location)
                 }
-                .navigationBarItems(trailing: Button(action: {
+                .navigationBarItems(leading: pickImage, trailing: Button(action: {
                     if let url = UIPasteboard.general.url,  url != document.backgroundURL {
 //                        document.backgroundURL = url
                         confirmBackgroundPaste = true
@@ -159,6 +159,27 @@ struct EmojiArtDocumentView: View {
 //    private func font(for emoji: EmojiArt.Emoji) -> Font {
 //        Font.system(size: emoji.fontSize * zoomScale)
 //    }
+    
+    @State private var showImagePicker = false
+    
+    private var pickImage: some View {
+        Image(systemName: "photo")
+            .imageScale(.large)
+            .foregroundColor(.accentColor)
+            .onTapGesture {
+                showImagePicker = true
+            }
+            .sheet(isPresented: $showImagePicker, content: {
+                ImagePicker() { image in
+                    if image != nil {
+                        DispatchQueue.main.async {
+                            document.backgroundURL  = image!.storeInTheFileSystem()
+                        }
+                    }
+                    showImagePicker = false
+                }
+            })
+    }
     
     
     private func position(for emoji: EmojiArt.Emoji, in size: CGSize) -> CGPoint {
