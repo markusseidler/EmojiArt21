@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct EmojiArtDocumentView: View {
     
@@ -161,16 +162,30 @@ struct EmojiArtDocumentView: View {
 //    }
     
     @State private var showImagePicker = false
+    @State private var imagePickerSourceType = UIImagePickerController.SourceType.photoLibrary
     
     private var pickImage: some View {
-        Image(systemName: "photo")
-            .imageScale(.large)
-            .foregroundColor(.accentColor)
-            .onTapGesture {
-                showImagePicker = true
+        HStack {
+            Image(systemName: "photo")
+                .imageScale(.large)
+                .foregroundColor(.accentColor)
+                .onTapGesture {
+                    showImagePicker = true
+                    imagePickerSourceType = .photoLibrary
             }
+        
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Image(systemName: "camera")
+                    .imageScale(.large)
+                    .foregroundColor(.accentColor)
+                    .onTapGesture {
+                        showImagePicker = true
+                        imagePickerSourceType = .camera
+                    }
+            } 
+        }
             .sheet(isPresented: $showImagePicker, content: {
-                ImagePicker() { image in
+                ImagePicker(sourceType: imagePickerSourceType) { image in
                     if image != nil {
                         DispatchQueue.main.async {
                             document.backgroundURL  = image!.storeInTheFileSystem()
